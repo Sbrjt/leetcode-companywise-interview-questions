@@ -35,13 +35,10 @@ jobs:
           python script.py
 
       - name: Commit
-        run: |
-          git config user.name  "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-
-          git add problem_company_mapping.json
-          git commit -m "sync"
-          git push origin HEAD:master
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: sync
+          file_pattern: problem_company_mapping.json
 
   keepalive:
     runs-on: ubuntu-latest
