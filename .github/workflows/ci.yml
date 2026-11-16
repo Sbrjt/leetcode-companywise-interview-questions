@@ -1,0 +1,50 @@
+name: Sync upstream and generate json mapping
+
+on:
+  schedule:
+    - cron: '0 0 * * 0' # every week
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout my repo
+        uses: actions/checkout@v7
+
+      - name: Checkout upstream repo
+        uses: actions/checkout@v7
+        with:
+          repository: snehasishroy/leetcode-companywise-interview-questions
+          path: temp
+
+      - name: Copy upstream files
+        run: |
+          rsync -av --exclude='.git' temp/ ./
+          rm -rf temp
+
+      - name: Run script
+        run: |
+          pip install pandas
+          python script.py
+
+      - name: Commit
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add problem_company_mapping.json
+          git commit -m "sync"
+          git push origin HEAD:master
+
+  keepalive:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule'
+    steps:
+      - uses: liskin/gh-workflow-keepalive@v1
